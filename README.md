@@ -35,6 +35,21 @@ Steps to get the box from Windows to Ubuntu:
 
 ## Setup sequence (ordered)
 
+### Step -1 — git or just pull up the mss1-setup
+
+https://github.com/spwntr/mss1-setup
+
+or
+
+```bash
+sudo apt install git
+git clone https://github.com/spwntr/mss1-setup.git
+cd mss1_setup
+cat README.md
+```
+
+or navigate there and open the file as a text document 
+
 ### Step 0 — SSH key setup
 Ed25519 SSH keys + `authorized_keys` + host alias.
 
@@ -157,15 +172,6 @@ sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-Plus the rest of the apt packages.
-```bash
-sudo apt update
-sudo apt install -y \
-  git pigz \
-  wbritish \
-  wl-clipboard
-```
-
 ### Step 4 — Build llama.cpp — `~/mss1_setup/llm-setup.md` §1.7
 
 
@@ -201,23 +207,120 @@ echo 'export PATH=~/llama.cpp/build/bin:$PATH' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-Once you have a model in ~/models directory after Step 5 (below) you can run it with:
+Once you have a model in ~/models directory after Step 5 (below) you can:
 
+1. run it as a chat bot in an open-webui interface with:
 ```bash
 llama-server -m ~/models/<your_gguf_file>
 ```
 
-and it should be reachable at 127.0.0.1:9931
+or 
+
+```bash
+llama-server -m ~/models/<your_model_folder>/<your_gguf_model_file>
+```
+
+and it should be reachable at `localhost:9931` from a browser
+
+2. run llama.cpp as a model router that you can connect to an agent like pi.dev as below
+```bash
+llama-server --models-dir ~/models
+```
 
 ### Step 5 — Hugging Face + download, merge + import to ollama to come — `~/mss1_setup/llm-setup.md` §1.8
 
 ```bash
 mkdir ~/models
-sudo apt install python3-huggingface-hub
-hf download unsloth/Qwen3.8-27B-GGUF --local-dir ~/models/Qwen3.8-27B-GGUF
+sudo apt install python3-huggingface-hub python3.14-venv 
+hf download Qwen/Qwen3.6-35B-A3B --local-dir ~/models/Qwen3.6-35B-A3B
 ```
 
-Eventually will put a merge script in the repo that autodetects shards and builds them into on gguf file.
+Merge sharded Huggingface download into single gguf file that can be hosted on llama.cpp
+```bash
+cd ~/llama.cpp
+python3 -m venv .venv
+(.venv) pip install -r requirements.txt
+(.venv) python3 convert_hf_to_gguf.py ../models/Qwen3.6-35B-A3B --outfile ../models/Qwen3.6-35B-A3B/Qwen3.6-35B-A3B.gguf --outtype f16
+(.venv) deactivate
+```
+
+### Step 5.5 — Pi.dev
+
+```bash
+sudo apt install npm
+curl -fsSL https://pi.dev/install.sh | sh
+```
+
+Don't start pi now when it asked you to at the end of installation. It added pi to the path in .bashrc, which we need to reload.
+
+```bash
+source ~/.bashrc
+```
+
+and setup the model control for pi
+
+```bash
+nano ~/.pi/agent/models.json
+```
+
+this will open a nano editor in the terminal. Don't just press buttons here, it doesn't act normal.
+
+copy this (beow json) like normal (ctl + c). Then paste it into the nano terminal window with (ctl + shift + v)
+
+```bash
+{
+  "$schema": "https://pi.dev/schemas/models.schema.json",
+  "providers": {
+    "llama.cpp": {
+      "baseUrl": "http://localhost:9931/v1",
+      "api": "openai-completions",
+      "apiKey": "none",
+      "models": [
+        {
+          "id": "Qwen3.6-35B-A3B",
+          "name": "Qwen3.6-35B-A3B",
+          "reasoning": true,
+          "stop": ["gasdf"],
+          "input": ["text"],
+          "contextWindow": 262144,
+          "maxTokens": 262144,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          }
+        }
+      ]
+    }
+  }
+}
+```
+
+do (ctl + o), press enter to save the file. then (ctl + x) to close nano.
+
+Start pi
+```bash
+pi
+```
+
+in pi, login to llama.cpp
+```pi
+/login llama.cpp
+```
+
+follow directions to input llama router `http://localhost:9931`
+then leave api key blank (unless you've set one in llama.cpp)
+```pi
+/llama
+```
+move the arrow to Qwen3.6-35B-A3B, hit enter. It will say something in red about the key, don't worry about it.
+
+```pi
+/model
+```
+
+select Qwen3.6-35-A3B, hit enter. Start asking it questions. It should be able to help troubleshoot from here.
 
 ### Step 6 — Docker — `~/mss1_setup/llm-setup.md` §1.3
 
