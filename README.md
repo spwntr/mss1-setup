@@ -3,9 +3,9 @@
 Setup steps for the local LLM stack on MSS1.
 
 > For the **base minimal explanations of why** things are done this way, see
-> **`~/mss1_setup/llm-setup.md`**. Deep troubleshooting and experiments: **`~/mss1_setup/TROUBLESHOOTING.md`**.
+> **`llm-setup.md`**. Deep troubleshooting and experiments: **`TROUBLESHOOTING.md`**.
 
-## Windows → Ubuntu migration — see `~/mss1_setup/llm-setup.md` §5
+## Windows → Ubuntu migration — see `llm-setup.md` §5
 
 Note: it's a **fresh install of Windows that we will never use** — so no migration, just change a
 few settings and then wipe for the Ubuntu install.
@@ -44,7 +44,7 @@ or
 ```bash
 sudo apt install git
 git clone https://github.com/spwntr/mss1-setup.git
-cd mss1_setup
+cd mss1-setup
 cat README.md
 ```
 
@@ -172,7 +172,7 @@ sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-### Step 4 — Build llama.cpp — `~/mss1_setup/llm-setup.md` §1.7
+### Step 4 — Build llama.cpp — `llm-setup.md` §1.7
 
 
 or just get the app:
@@ -227,7 +227,7 @@ and it should be reachable at `localhost:9931` from a browser
 llama-server --models-dir ~/models
 ```
 
-### Step 5 — Hugging Face + download, merge + import to ollama to come — `~/mss1_setup/llm-setup.md` §1.8
+### Step 5 — Hugging Face + download, merge + import to ollama to come — `llm-setup.md` §1.8
 
 ```bash
 mkdir ~/models
@@ -322,13 +322,13 @@ move the arrow to Qwen3.6-35B-A3B, hit enter. It will say something in red about
 
 select Qwen3.6-35-A3B, hit enter. Start asking it questions. It should be able to help troubleshoot from here.
 
-### Step 6 — Docker — `~/mss1_setup/llm-setup.md` §1.3
+### Step 6 — Docker — `llm-setup.md` §1.3
 
-### Step 7 — Ollama compose — `~/mss1_setup/llm-setup.md` §1.4
+### Step 7 — Ollama compose — `llm-setup.md` §1.4
 
 Full compose file: `~/docker/ollama/compose.yml`.
 
-### Step 8 — Start Ollama — `~/mss1_setup/llm-setup.md` §1.5
+### Step 8 — Start Ollama — `llm-setup.md` §1.5
 
 ```bash
 cd ~/docker/ollama
@@ -337,14 +337,14 @@ docker compose ps
 docker compose logs -f ollama
 ```
 
-### Step 9 — Open WebUI — `~/mss1_setup/llm-setup.md` §1.6
+### Step 9 — Open WebUI — `llm-setup.md` §1.6
 
-### Step 10 — Verify — `~/mss1_setup/llm-setup.md` §1.9
+### Step 10 — Verify — `llm-setup.md` §1.9
 
-## Model inventory / how to add a model — `~/mss1_setup/llm-setup.md` §4
+## Model inventory / how to add a model — `llm-setup.md` §4
 
-## Deep troubleshooting / experiments — `~/mss1_setup/TROUBLESHOOTING.md`
+## Deep troubleshooting / experiments — `TROUBLESHOOTING.md`
 
-## References — `~/mss1_setup/llm-setup.md`
+## References — `llm-setup.md`
 
 ## Open questions / future work
