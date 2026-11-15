@@ -2,6 +2,9 @@
 
 Setup steps for the local LLM stack on MSS1.
 
+This will get you to llama.cpp hosting a chat in webui and/or a pi.dev agent. Both can help you get 
+everything else you'd want setup. chat can help you do it, pi.dev can potentially do it for you.
+
 > For the **base minimal explanations of why** things are done this way, see
 > **`llm-setup.md`**. Deep troubleshooting and experiments: **`TROUBLESHOOTING.md`**.
 
@@ -321,6 +324,11 @@ move the arrow to Qwen3.6-35B-A3B, hit enter. It will say something in red about
 ```
 
 select Qwen3.6-35-A3B, hit enter. Start asking it questions. It should be able to help troubleshoot from here.
+
+To exit pi:
+```pi
+/quit
+```
 
 ### Step 6 — Docker — `llm-setup.md` §1.3
 
