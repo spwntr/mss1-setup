@@ -4,7 +4,7 @@ Base document. Holds the **minimal explanations of why** the local LLM stack is
 configured the way it is, plus the **setup steps with copy-paste commands**.
 
 Deep troubleshooting, experiments, and extra stuff tried live: see
-`~/mss1_setup/TROUBLESHOOTING.md`.
+`TROUBLESHOOTING.md`.
 
 ---
 
@@ -12,7 +12,7 @@ Deep troubleshooting, experiments, and extra stuff tried live: see
 
 - **Machine:** Miniforum MS-S1 Max, AMD Ryzen AI Max+ "P495" (Strix Halo, gfx1151),
   Radeon 8060S iGPU.
-- **RAM:** 192 GB unified (this box) / 128 GB (fresh MS-S1 395) — see `~/mss1_setup/TROUBLESHOOTING.md` §A5.
+- **RAM:** 192 GB unified (this box) / 128 GB (fresh MS-S1 395) — see `TROUBLESHOOTING.md` §A5.
 - **OS:** Ubuntu 26.04 "Resolute" (Wayland).
 - **Stack:** ROCm 10.1 (system) + Ollama (Docker, `ollama/ollama:rocm`, root) + Open WebUI.
 
@@ -88,12 +88,11 @@ Docker official:
 ```bash
 sudo apt update
 sudo apt install -y ca-certificates curl gnupg
-sudo install -m 0755 -d /etc/apt/keyrings
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 sudo chmod a+r /etc/apt/keyrings/docker.asc
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  "deb [arch=am64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  resolute stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
@@ -102,21 +101,18 @@ Plus the rest of the apt packages.
 ```bash
 sudo apt update
 sudo apt install -y \
-  curl ca-certificates git pigz util-linux-extra \
+  git pigz util-linux-extra \
   openssh-server openssh-client ssh-askpass molly-guard ncurses-term \
   cryptsetup efibootmgr grub-efi-amd64 grub-efi-amd64-signed lvm2 shim-signed wbritish \
   linux-generic-hwe-24.04 \
-  docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin \
   llama.cpp-tools libllama0 libggml0 libggml0-backend-vulkan \
   cmake build-essential libssl-dev ninja-build \
   python3.14-venv python3-pip python3-setuptools \
-  amdrocm-base amdrocm-amdsmi \
   wl-clipboard
 ```
 
-### 1.5 Step 5 — Install Docker
+### 1.5 Step 5 — Add user to Docker group
 ```bash
-sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 sudo usermod -aG docker "<username>"
 newgrp docker
 ```
@@ -199,7 +195,7 @@ cmake --build build --target llama-gguf-split
 ```bash
 uvx --from huggingface-cli huggingface-cli login
 uvx --from huggingface-cli huggingface-cli download RecursiveSI/flint \
-    --include "flint-BF16-*.gguf" --local-dir /home/<username>/models
+    --include "flint-BF16-*.gguf" --local-dir ~/models
 ~/models/import_gguf_model_file.sh <file-or-shard.gguf> [model-name]
 ```
 
@@ -260,12 +256,12 @@ curl -d '{"model":"qwen3:0.6b","prompt":"Say hello","stream":false}' localhost:1
 - Clevis defaults to the older SHA-1 PCR bank; the TPM here only uses SHA-256, so bind with
   `{"pcr_bank":"sha256","pcr_ids":"7"}`:
   ```bash
-  sudo clevis luks bind -d /dev/nvme0n1p3 tpm2 '{"pcr_bank":"sha256","pcr_ids":"7"}'
+  sudo clevis luks bind -d /dev/<luks-partition> tpm2 '{"pcr_bank":"sha256","pcr_ids":"7"}'
   ```
   (Replace with your LUKS partition; it will ask for the existing LUKS passphrase.)
 - After success:
   ```bash
-  sudo clevis luks list -d /dev/nvme0n1p3
+  sudo clevis luks list -d /dev/<luks-partition>
   sudo update-initramfs -u
   ```
 - If it still asks for the passphrase after reboot: check initramfs tooling — with `dracut`, use
@@ -286,7 +282,7 @@ curl -d '{"model":"qwen3:0.6b","prompt":"Say hello","stream":false}' localhost:1
 ## Operational notes
 
 - Keep the passphrase safe; it's the fallback if the TPM ever refuses to unlock.
-- Expect to re-bind after firmware or Secure Boot updates: `sudo clevis luks regen -d /dev/nvme0n1p3 -s 1`.
+- Expect to re-bind after firmware or Secure Boot updates: `sudo clevis luks regen -d /dev/<luks-partition> -s 1`.
 - Test the remote unlock once; if the delay bothers you, it's usually the boot environment waiting
   for the network for dropbear — harmless, but can be shortened.
 
@@ -352,5 +348,5 @@ Steps to get the box from Windows to Ubuntu:
 
 ## Related
 
-- Troubleshooting: `~/mss1_setup/TROUBLESHOOTING.md`
+- Troubleshooting: `TROUBLESHOOTING.md`
 - This doc: base minimal explanations of why.

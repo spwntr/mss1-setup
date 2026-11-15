@@ -1,7 +1,7 @@
 # TROUBLESHOOTING — Local LLM stack on Strix Halo (MS-S1 Max)
 
-> Agent note: this file is shared context. Read `~/mss1_setup/llm-setup.md` first for
-> architecture and daily ops; `~/mss1_setup/llm-setup.md` §0 holds the apt package
+> Agent note: this file is shared context. Read `llm-setup.md` first for
+> architecture and daily ops; `llm-setup.md` §0 holds the apt package
 > inventory. Each entry below: **Symptom → Cause → Fix → Prevent**. If you hit
 > something new, append an entry in the same format.
 
@@ -97,7 +97,7 @@ Stack: ROCm 10.1 (system) + Ollama (Docker, root image, ROCm) + Open WebUI.
   PARALLEL=8 registration; the other model only loaded after the 27B request
   ended and the runner evicted.
 - **Fix:** right-size `num_ctx` (per-model Modelfile, `ollama create` — see
-  ~/mss1_setup/llm-setup.md §3.6) and `OLLAMA_NUM_PARALLEL` to real usage; raise `gttsize`
+  llm-setup.md §3.6) and `OLLAMA_NUM_PARALLEL` to real usage; raise `gttsize`
   (A5). Current setting: 27B at `num_ctx 65536`, PARALLEL=3, GTT 180 GB.
 - **Prevent:** size runner reservations, not just weights:
   `weights + slots × num_ctx × KV-per-token + other models ≪ GTT`. KV per
@@ -240,7 +240,7 @@ Stack: ROCm 10.1 (system) + Ollama (Docker, root image, ROCm) + Open WebUI.
   a 27B pinned at num_ctx 262144 with PARALLEL=8 predicted ~110 GiB.
 - **Fix:** re-create model with `num_ctx 65536`, `OLLAMA_NUM_PARALLEL=3`,
   `OLLAMA_MAX_LOADED_MODELS=4`, + §3.2 GTT raise. (27B no longer primary;
-  current primary is flint — see ~/mss1_setup/llm-setup.md §3.6.)
+  current primary is flint — see llm-setup.md §3.6.)
 - **Prevent:** size runner reservations, not just weights.
 
 ---
