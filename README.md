@@ -61,7 +61,9 @@ chmod 600 ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/id_ed25519 ~/.ssh/id_ed25519.pub
 ```
 
-### Step 1 — Encryption: dropbear + clevis
+### ~~Step 1 — Encryption: dropbear + clevis~~
+
+**This section is presently not working. I misunderstood the instructions. I'm working on fixing it. Go to the next step.**
 
 Ubuntu 26.04 installer refuses hardware-backed (TPM) full-disk encryption (PCR_UNUSABLE error;
 Secure Boot policy PCR7 measurements, dbt not supported by secboot). With plain passphrase LUKS, the
