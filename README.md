@@ -80,9 +80,8 @@ Workarounds:
    ```bash
    sudo apt install dropbear-initramfs net-tools ssh cryptsetup lvm2 shim-signed
    ```
-   make the file add your public key to /etc/dropbear/initramfs/authorized_keys
+   copy your public key to /etc/dropbear/initramfs/authorized_keys
    ```bash
-   sudo touch /etc/dropbear/initramfs/authorized_keys
    cat ~/.ssh/id_ed25519.pub
    ```
    select the output of the cat for your public key and copy it with right click on the mouse
