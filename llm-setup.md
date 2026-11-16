@@ -46,6 +46,16 @@ Example `~/.ssh` file structure:
 └── id_ed25519.pub
 ```
 
+once you have an ssh connection and authorized_keys associated config can look like this and be very helpful
+
+```bash
+Host <host>
+    HostName <ip_address>
+    User <username>
+    IdentityFile ~/.ssh/id_ed25519
+    StrictHostKeyChecking no
+```
+
 ### 1.2 Step 2 — Encryption: dropbear + clevis
 Install dropbear + clevis.
 

@@ -64,16 +64,6 @@ chmod 600 ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/id_ed25519 ~/.ssh/id_ed25519.pub
 ```
 
-Host alias (`<host>` → `<ip_address>`) lives in `~/.ssh/config` and is very helpful for connecting other machines later:
-
-```bash
-Host <host>
-    HostName <ip_address>
-    User <username>
-    IdentityFile ~/.ssh/id_ed25519
-    StrictHostKeyChecking no
-```
-
 ### Step 1 — Encryption: dropbear + clevis
 
 Ubuntu 26.04 installer refuses hardware-backed (TPM) full-disk encryption (PCR_UNUSABLE error;
@@ -242,6 +232,8 @@ Merge sharded Huggingface download into single gguf file that can be hosted on l
 ```bash
 cd ~/llama.cpp
 python3 -m venv .venv
+# once the above step has been completed the first time and created the .venv environment
+# "source .venv/bin/activate" gets you back into the .venv environment
 (.venv) pip install -r requirements.txt
 (.venv) python3 convert_hf_to_gguf.py ../models/Qwen3.6-35B-A3B --outfile ../models/Qwen3.6-35B-A3B/Qwen3.6-35B-A3B.gguf --outtype f16
 (.venv) deactivate
