@@ -46,12 +46,18 @@ open the terminal app.
 
 ```bash
 mkdir -p ~/.ssh && chmod 700 ~/.ssh
+```
+```bash
 ssh-keygen -t ed25519 -C "<username>@<host>" -f ~/.ssh/id_ed25519
 ```
 put in a passcode that you won't forget as the key. you can leave it blank, but you would have to remember you left it blank if you do.
 ```bash
 cat ~/.ssh/id_ed25519.pub >> ~/.ssh/authorized_keys
+```
+```bash
 chmod 600 ~/.ssh/authorized_keys
+```
+```bash
 chmod 600 ~/.ssh/id_ed25519 ~/.ssh/id_ed25519.pub
 ```
 
@@ -87,11 +93,15 @@ Workarounds:
    to make sure it now contains your public key. if no output, or it's wrong, cycle back up and delete it's contents and put the key there.
    ```bash
    sudo chmod 600 /etc/dropbear/initramfs/authorized_keys
+   ```
+   ```bash
    sudo update-initramfs -u
    ```
    this updates the boot settings. next we start the ssh server to run so we can get to it.
    ```bash
    sudo systemctl enable ssh.service
+   ```
+   ```bash
    sudo systemctl start ssh.service
    ```
    we can check that it is running. should be green dots with "active (running)"
@@ -108,7 +118,14 @@ Workarounds:
    ```
    the output in the form "192.168.x.x" is your <host-ip> to replace that in the next line.
 
-   connect with `ssh root@<host-ip>` and run `cryptroot-unlock` to enter the disk
+   connect from a computer that you would use to login remotely and put in the disk encryption passphrase if the clevis in the next step doesn't work.
+   ```bash
+   ssh root@<host-ip>`
+   ```
+   ```bash
+   cryptroot-unlock
+   ```
+   to enter the disk
    passphrase.
 
 3. **Bind disk to TPM yourself** — `clevis` + `clevis-tpm2`.
@@ -117,11 +134,17 @@ Workarounds:
    that blocked the installer doesn't apply. You get unattended boot, and your passphrase remains as
    a backup.
 
+   Find the encrypted partition. Output is the <luks-partition> something like nvmexxxxxx. Replace the place holders in the following commands.
    ```bash
-   # output is the <luks-partition> something like nvmexxxxxx
    lsbkl -f | grep -i crypto
+   ```
+   ```bash
    sudo apt install clevis clevis-luks clevis-tpm2 clevis-initramfs
+   ```
+   ```bash
    sudo clevis luks bind -d /dev/<luks-partition> tpm2 '{"pcr_bank":"sha256","pcr_ids":"7"}'
+   ```
+   ```bash
    sudo update-initramfs -u
    ```
 
@@ -130,10 +153,12 @@ Workarounds:
    
    ```bash
    sudo clevis luks bind -d /dev/<luks-partition> tpm2 '{"pcr_bank":"sha256","pcr_ids":"7"}'
+   ```
+   ```bash
    sudo update-initramfs -u
    ```
 
-- After success: `sudo clevis luks list -d /dev/<luks-partition>` and `sudo update-initramfs -u`.
+- After success: `sudo clevis luks list -d /dev/<luks-partition>`
 - If you wait ~30–60 s it eventually decrypts itself → TPM released the key, Clevis unlocked
   unattended; the passphrase prompt is cosmetic.
 
@@ -159,6 +184,8 @@ EOF
 ```
 ```bash
 sudo apt update
+```
+```bash
 sudo apt install -y amdrocm-base amdrocm-amdsmi
 ```
 
@@ -176,6 +203,8 @@ Reload bashrc to use the new path.
 Docker official:
 ```bash
 sudo apt update
+```
+```bash
 sudo apt install -y ca-certificates curl gnupg util-linux-extra
 ```
 ```bash
@@ -191,12 +220,17 @@ echo \
 ```
 ```bash
 sudo apt update
+```
+```bash
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
 Add the user to the docker group (then re-login):
 ```bash
 sudo usermod -aG docker $USER
+```
+Reload the docker group
+```bash
 newgrp docker
 ```
 
@@ -240,6 +274,8 @@ source ~/.bashrc
 
 ```bash
 mkdir ~/models
+```
+```bash
 sudo apt install python3-huggingface-hub python3.14-venv
 ```
 next step is going to take a while. it builds the hf tool and then will download a very large model (~60 GB)
@@ -250,6 +286,8 @@ hf download Qwen/Qwen3.6-35B-A3B --local-dir ~/models/Qwen3.6-35B-A3B
 Merge sharded Huggingface download into single gguf file that can be hosted on llama.cpp
 ```bash
 cd ~/llama.cpp
+```
+```bash
 python3 -m venv .venv
 ```
 
@@ -257,7 +295,11 @@ once the above `python3 -m venv .venv` step creates the .venv project environmen
 
 ```bash
 (.venv)$ pip install -r requirements.txt
+```
+```bash
 (.venv)$ python3 convert_hf_to_gguf.py ../models/Qwen3.6-35B-A3B --outfile ../models/Qwen3.6-35B-A3B/Qwen3.6-35B-A3B.gguf --outtype f16
+```
+```bash
 (.venv)$ deactivate
 ```
 
@@ -289,6 +331,8 @@ llama-server --models-dir ~/models
 
 ```bash
 sudo apt install npm
+```
+```bash
 curl -fsSL https://pi.dev/install.sh | sh
 ```
 
