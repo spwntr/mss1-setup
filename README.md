@@ -79,18 +79,43 @@ Workarounds:
 
    ```bash
    sudo apt install dropbear-initramfs net-tools ssh cryptsetup lvm2 shim-signed
-   # add your public key to /etc/dropbear/initramfs/authorized_keys
-   cat ~/.ssh/id_ed25519.pub >> /etc/dropbear/initramfs/authorized_keys
+   ```
+   make the file add your public key to /etc/dropbear/initramfs/authorized_keys
+   ```bash
+   sudo touch /etc/dropbear/initramfs/authorized_keys
+   cat ~/.ssh/id_ed25519.pub
+   ```
+   select the output of the cat for your public key and copy it with right click on the mouse
+   ```bash
+   sudo nano /etc/dropbear/initramfs/authorized_keys
+   ```
+   this opens editor nano (which looks and acts weird). do (ctl + shift + v) to paste into the editor.
+   then do (ctl + o) and then enter to save the file. and (ctl + x) to quit and go back to terminal.
+   ```bash
+   sudo cat /etc/dropbear/initramfs/authorized_keys
+   ```
+   to make sure it now contains your public key. if no output, or it's wrong, cycle back up and delete it's contents and put the key there.
+   ```bash
    sudo chmod 600 /etc/dropbear/initramfs/authorized_keys
    sudo update-initramfs -u
+   ```
+   this updates the boot settings. next we start the ssh server to run so we can get to it.
+   ```bash
    sudo systemctl enable ssh.service
    sudo systemctl start ssh.service
    ```
+   we can check that it is running. should be green dots with "active (running)"
+   ```bash
+   sudo systemctl status ssh.service
+   ```
+   do (ctl + c) to get back to the terminal prompt.
+
+   Reboot. Put in the passphrase, then sign in like normal.
 
    After reboot, connect with `ssh root@<host-ip>` and run `cryptroot-unlock` to enter the disk
    passphrase.
 
-2. **Bind disk to TPM yourself** — `clevis` + `clevis-tpm2`.
+3. **Bind disk to TPM yourself** — `clevis` + `clevis-tpm2`.
    Install with normal LUKS, add TPM as an extra unlock method after install. These tools seal the
    key to the machine's current measurements rather than predicting future ones, so the dbt problem
    that blocked the installer doesn't apply. You get unattended boot, and your passphrase remains as
