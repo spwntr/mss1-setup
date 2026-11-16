@@ -37,28 +37,19 @@ Steps to get the box from Windows to Ubuntu:
     firmware updates are happening. They might take a while.
 
 ## Setup sequence (ordered)
-
-### Step -1 — git or just pull up the mss1-setup
-
-https://github.com/spwntr/mss1-setup
-
-or
-
-```bash
-sudo apt install git
-git clone https://github.com/spwntr/mss1-setup.git
-cd mss1-setup
-cat README.md
-```
-
-or navigate there and open the file as a text document 
+Visit https://github.com/spwntr/mss1-setup
 
 ### Step 0 — SSH key setup
 Ed25519 SSH keys + `authorized_keys` + host alias.
 
+open the terminal app.
+
 ```bash
 mkdir -p ~/.ssh && chmod 700 ~/.ssh
 ssh-keygen -t ed25519 -C "<username>@<host>" -f ~/.ssh/id_ed25519
+```
+put in a passcode that you won't forget as the key. you can leave it blank, but you would have to remember you left it blank if you do.
+```bash
 cat ~/.ssh/id_ed25519.pub >> ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/id_ed25519 ~/.ssh/id_ed25519.pub
@@ -111,7 +102,13 @@ Workarounds:
 
    Reboot. Put in the passphrase, then sign in like normal.
 
-   After reboot, connect with `ssh root@<host-ip>` and run `cryptroot-unlock` to enter the disk
+   After reboot find your IP address
+   ```bash
+   ifconfig | grep "inet 192"
+   ```
+   the output in the form "192.168.x.x" is your <host-ip> to replace that in the next line.
+
+   connect with `ssh root@<host-ip>` and run `cryptroot-unlock` to enter the disk
    passphrase.
 
 3. **Bind disk to TPM yourself** — `clevis` + `clevis-tpm2`.
@@ -143,8 +140,12 @@ Workarounds:
 ### Step 2 — Add AMD ROCm apt repo (repo adds)
 ```bash
 sudo mkdir --parents --mode=0755 /etc/apt/keyrings
+```
+```bash
 wget -qO - https://stable.repo.amd.com/rocm/gpg/packages.gpg | \
   gpg --dearmor | sudo tee /etc/apt/keyrings/amdrocm.gpg > /dev/null
+```
+```bash
 sudo tee /etc/apt/sources.list.d/amdrocm-stable.sources << 'EOF'
 X-Repo-Id: amdrocm-stable
 Types: deb
@@ -155,6 +156,8 @@ Architectures: amd64
 Signed-By: /etc/apt/keyrings/amdrocm.gpg
 Enabled: yes
 EOF
+```
+```bash
 sudo apt update
 sudo apt install -y amdrocm-base amdrocm-amdsmi
 ```
@@ -174,11 +177,19 @@ Docker official:
 ```bash
 sudo apt update
 sudo apt install -y ca-certificates curl gnupg util-linux-extra
+```
+```bash
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+```
+```bash
 sudo chmod a+r /etc/apt/keyrings/docker.asc
+```
+```bash
 echo \
   "deb [arch=amd signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
   resolute stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+```bash
 sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
@@ -191,40 +202,69 @@ newgrp docker
 
 ### Step 4 — Build llama.cpp — `llm-setup.md` §1.7
 
+Do it the hard way so you can get tools to merge model download shards and quantize big model files:
 
-or just get the app:
 ```bash
-curl -LsSf https://llama.app/install.sh | sh
+sudo apt install git amdrocm-core-sdk llama.cpp-tools libllama0 libggml0 libggml0-backend-vulkan \
+  cmake ccache build-essential libssl-dev ninja-build
 ```
 
-or do it the hard way so you can merge model download shards and quantize big model files:
-
+from home, or where ever you want llama.cpp directory (if not home, modify ~/llama.cpp references below accordingly)
 ```bash
-sudo apt install amdrocm-core-sdk llama.cpp-tools libllama0 libggml0 libggml0-backend-vulkan \
-  cmake ccache build-essential libssl-dev ninja-build 
-
-# from home, or where ever you want llama.cpp directory (if not home, modify ~/llama.cpp references below accordingly)
 cd ~
+git clone https://github.com/ggml-org/llama.cpp && cd ~/llama.cpp
+```
 
-git clone https://github.com/ggml-org/llama.cpp
-cd ~/llama.cpp
-
-# build llama.cpp
+build llama.cpp. copy and paste all of this.
+```bash
 HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
     cmake -S . -B build -DGGML_HIP=ON -DAMDGPU_TARGETS=gfx1151 -DCMAKE_BUILD_TYPE=Release
     
 cmake --build build --config Release -j"$(nproc)"
+```
 
-# binary → ~/llama.cpp/build/bin/llama
-# spilt/merge tool → ~/llama.cpp/build/bin/llama-gguf-split
-# build quantize tool → ~/llama.cpp/build/bin/llama-quantize
-# if you built the tools, you probably want to add them to your path
+llama and llama-server tools → ~/llama.cpp/build/bin/llama
+spilt/merge tool → ~/llama.cpp/build/bin/llama-gguf-split
+build quantize tool → ~/llama.cpp/build/bin/llama-quantize
+
+you need to add the tools to your path
+```bash
 echo 'export PATH=~/llama.cpp/build/bin:$PATH' >> ~/.bashrc
-# Reload bashrc to use the new path.
+```
+Reload bashrc to use the new path.
+```bash
 source ~/.bashrc
 ```
 
-Once you have a model in ~/models directory after Step 5 (below) you can:
+### Step 5 — Hugging Face + download, merge + import to ollama to come — `llm-setup.md` §1.8
+
+```bash
+mkdir ~/models
+sudo apt install python3-huggingface-hub python3.14-venv
+```
+next step is going to take a while. it builds the hf tool and then will download a very large model (~60 GB)
+```bash
+hf download Qwen/Qwen3.6-35B-A3B --local-dir ~/models/Qwen3.6-35B-A3B
+```
+
+Merge sharded Huggingface download into single gguf file that can be hosted on llama.cpp
+```bash
+cd ~/llama.cpp
+python3 -m venv .venv
+```
+
+once the above `python3 -m venv .venv` step creates the .venv project environment, `source .venv/bin/activate` gets you back into the .venv environment when you are in the ~/llama.cpp directory. only copy the commands below from after the `$`, they assume you are in the .venv environment denoted by the (.venv) in the command prompt.
+
+```bash
+(.venv)$ pip install -r requirements.txt
+(.venv)$ python3 convert_hf_to_gguf.py ../models/Qwen3.6-35B-A3B --outfile ../models/Qwen3.6-35B-A3B/Qwen3.6-35B-A3B.gguf --outtype f16
+(.venv)$ deactivate
+```
+
+
+### Step 6 — Run the model with llama.cpp
+
+Once you have a model in ~/models directory you can:
 
 1. run it as a chat bot in an open-webui interface with:
 ```bash
@@ -234,36 +274,18 @@ llama-server -m ~/models/<your_gguf_file>
 or 
 
 ```bash
-llama-server -m ~/models/<your_model_folder>/<your_gguf_model_file>
+llama-server -m ~/models/<your_model_folder>/<your_gguf_file>
 ```
 
 and it should be reachable at `localhost:9931` from a browser
+
 
 2. run llama.cpp as a model router that you can connect to an agent like pi.dev as below
 ```bash
 llama-server --models-dir ~/models
 ```
 
-### Step 5 — Hugging Face + download, merge + import to ollama to come — `llm-setup.md` §1.8
-
-```bash
-mkdir ~/models
-sudo apt install python3-huggingface-hub python3.14-venv 
-hf download Qwen/Qwen3.6-35B-A3B --local-dir ~/models/Qwen3.6-35B-A3B
-```
-
-Merge sharded Huggingface download into single gguf file that can be hosted on llama.cpp
-```bash
-cd ~/llama.cpp
-python3 -m venv .venv
-# once the above step has been completed the first time and created the .venv environment
-# "source .venv/bin/activate" gets you back into the .venv environment
-(.venv) pip install -r requirements.txt
-(.venv) python3 convert_hf_to_gguf.py ../models/Qwen3.6-35B-A3B --outfile ../models/Qwen3.6-35B-A3B/Qwen3.6-35B-A3B.gguf --outtype f16
-(.venv) deactivate
-```
-
-### Step 5.5 — Pi.dev
+### Step 7 — Pi.dev. Get an agent.
 
 ```bash
 sudo apt install npm
@@ -346,13 +368,13 @@ To exit pi:
 /quit
 ```
 
-### Step 6 — Docker — `llm-setup.md` §1.3
+### Step 8 — Docker — `llm-setup.md` §1.3
 
-### Step 7 — Ollama compose — `llm-setup.md` §1.4
+### Step 9 — Ollama compose — `llm-setup.md` §1.4
 
 Full compose file: `~/docker/ollama/compose.yml`.
 
-### Step 8 — Start Ollama — `llm-setup.md` §1.5
+### Step 10 — Start Ollama — `llm-setup.md` §1.5
 
 ```bash
 cd ~/docker/ollama
@@ -361,9 +383,9 @@ docker compose ps
 docker compose logs -f ollama
 ```
 
-### Step 9 — Open WebUI — `llm-setup.md` §1.6
+### Step 11 — Open WebUI — `llm-setup.md` §1.6
 
-### Step 10 — Verify — `llm-setup.md` §1.9
+### Step 12 — Verify — `llm-setup.md` §1.9
 
 ## Model inventory / how to add a model — `llm-setup.md` §4
 
