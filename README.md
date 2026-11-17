@@ -96,7 +96,7 @@ after every reboot / power cut.
 
    Find the encrypted partition. Output is the `<luks-partition>` something like nvmexxxxxx that. Replace the place holder in the following commands.
    ```bash
-   lsbkl -f | grep -i crypto
+   lsblk -f | grep -i crypto
    ```
    ```bash
    sudo apt install clevis clevis-luks clevis-tpm2 clevis-initramfs
@@ -128,49 +128,25 @@ after every reboot / power cut.
 - I'm working on instructions to have the fallback dropbear to remotely login and put in the passphrase.
 
 ### Step 2 — Add AMD ROCm apt repo (repo adds)
-Make a keyrings directory to store authentication keys for the repositories that we will download from.
+Get dependencies
 ```bash
-sudo mkdir --parents --mode=0755 /etc/apt/keyrings
+sudo apt install libatomic1 libquadmath0
 ```
-Get the key for AMD RocM packages.
+Get a file that will install the repository for you.
 ```bash
-wget -qO - https://stable.repo.amd.com/rocm/gpg/packages.gpg | \
-  gpg --dearmor | sudo tee /etc/apt/keyrings/amdrocm.gpg > /dev/null
+wget https://repo.radeon.com/amdgpu-install/31.60/ubuntu/resolute/amdgpu-install_31.60.316000-1_all.deb
 ```
-Add the repository to the ones `apt` looks for when you do `sudo apt update`
+install the file that adds the amd rocm repositories.
 ```bash
-sudo tee /etc/apt/sources.list.d/amdrocm-stable.sources << 'EOF'
-X-Repo-Id: amdrocm-stable
-Types: deb
-URIs: https://stable.repo.amd.com/rocm/core/packages/ubuntu2604/
-Suites: stable
-Components: main
-Architectures: amd64
-Signed-By: /etc/apt/keyrings/amdrocm.gpg
-Enabled: yes
-EOF
+sudo apt install ./amdgpu-install_31.60.316000-1_all.deb
 ```
-Update the repositories. You should see the newly added amd.com/rocm/core repo in the list.
+Update the repositories, which should now include amd.rocm sources.
 ```bash
 sudo apt update
 ```
-Install the AMD packages.
+Get the core-dev packages and debug tools for our APU gfx1151.
 ```bash
-sudo apt install -y amdrocm-core-sdk amdrocm-amdsmi
-```
-
-Add the user to the GPU groups (video + render) for AMD ROCm:
-```bash
-sudo usermod -aG video,render $USER
-```
-
-Amd tools aren't in path for some reason. Add them to path:
-```bash
-echo 'export PATH=/opt/rocm/core-10.1/bin:$PATH' >> ~/.bashrc'
-```
-Reload bashrc to use the new path.
-```bash
-source ~/.bashrc
+sudo apt install amdrocm-core-dev10.1-gfx1151 amd-debug-tools
 ```
 
 ### Step 3 — Install all the stuff with apt
@@ -182,6 +158,11 @@ Install some tools that we will use.
 ```bash
 sudo apt install -y ca-certificates curl gnupg util-linux-extra
 ```
+Create the keyrings directory if it doesn't already exist for authentication keys.
+```bash
+sudo mkdir --parents --mode=0755 /etc/apt/keyrings
+```
+
 Get the authentication key for docker repo.
 ```bash
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
