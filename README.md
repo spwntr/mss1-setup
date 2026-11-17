@@ -25,7 +25,7 @@ Steps to get the box from Windows to Ubuntu:
    which you should do and it will immediately reboot. Intercept it again and with DELETE and send it
    into BIOS and boot from USB again. Try/install Ubuntu.
 6. Hardware encryption is broken, so with TPM cleared, go through normal LUKS encryption and put in
-   a passphrase that you keep track of in your password manager (you will need it later in the
+   a passphrase that you keep track of **in your password manager** (you will need it later in the
    installation as well).
 7. Finish installation as instructed. Remove USB when instructed and reboot. Put in your passphrase
    when instructed.
@@ -36,17 +36,22 @@ Steps to get the box from Windows to Ubuntu:
 11. Open Firmware Updater and update all of those with reboots. **DO NOT POWER OFF** while the
     firmware updates are happening. They might take a while.
 
-## Setup sequence (ordered)
+## Setup sequence (ordered starting with fresh Ubuntu 26.04 install)
 Visit https://github.com/spwntr/mss1-setup
 
-### Step 0 — SSH key setup
-Ed25519 SSH keys + `authorized_keys` + host alias.
+### Step 0 — SSH key and setup
+Ed25519 SSH keys + `authorized_keys` + host alias. ssh.service 
 
 open the terminal app.
-
+Install some programs we'll need.
+```bash
+sudo apt install net-tools ssh cryptsetup lvm2 shim-signed
+```
+Setup ssh keys
 ```bash
 mkdir -p ~/.ssh && chmod 700 ~/.ssh
 ```
+Use your username and the name of your computer as `<username>` and `<host>`. This information is in your terminal command line prompt `<username>@<host>:~$`
 ```bash
 ssh-keygen -t ed25519 -C "<username>@<host>" -f ~/.ssh/id_ed25519
 ```
@@ -60,43 +65,40 @@ chmod 600 ~/.ssh/authorized_keys
 ```bash
 chmod 600 ~/.ssh/id_ed25519 ~/.ssh/id_ed25519.pub
 ```
+Start the ssh.service
+```bash
+sudo systemctl enable ssh.service
+```
+```bash
+sudo systemctl start ssh.service
+```
+Check that it is running. should be green dots with "active (running)"
+```bash
+sudo systemctl status ssh.service
+```
+do (ctl + c) to get back to the terminal prompt.
 
 
-###Step 1 — Bind disk to TPM — `clevis` + `clevis-tpm2` so that it will automatically unencrypt the disk.
+### Step 1 — Bind disk to TPM — `clevis` + `clevis-tpm2` so that it will automatically unencrypt the disk.
 Ubuntu 26.04 installer refuses hardware-backed (TPM) full-disk encryption (PCR_UNUSABLE error;
 Secure Boot policy PCR7 measurements, dbt not supported by secboot). With plain passphrase LUKS, the
 machine drops to early boot and waits for the passphrase at the console — a headless server hangs
 after every reboot / power cut.
 
-Setup:
-1. **SSH**
-   ```bash
-   sudo apt install net-tools ssh cryptsetup lvm2 shim-signed
-   ```
-   ```bash
-   sudo systemctl enable ssh.service
-   ```
-   ```bash
-   sudo systemctl start ssh.service
-   ```
-   we can check that it is running. should be green dots with "active (running)"
-   ```bash
-   sudo systemctl status ssh.service
-   ```
-   do (ctl + c) to get back to the terminal prompt.
-   
+
    Install with normal LUKS, add TPM as an extra unlock method after install. These tools seal the
    key to the machine's current measurements rather than predicting future ones, so the dbt problem
    that blocked the installer doesn't apply. You get unattended boot, and your passphrase remains as
    a backup.
 
-   Find the encrypted partition. Output is the <luks-partition> something like nvmexxxxxx. Replace the place holders in the following commands.
+   Find the encrypted partition. Output is the `<luks-partition>` something like nvmexxxxxx that. Replace the place holder in the following commands.
    ```bash
    lsbkl -f | grep -i crypto
    ```
    ```bash
    sudo apt install clevis clevis-luks clevis-tpm2 clevis-initramfs
    ```
+   Bind the encrypted partition to the TPM. This will ask you for the encryption passphrase that should be in your password manager from installing Ubuntu.
    ```bash
    sudo clevis luks bind -d /dev/<luks-partition> tpm2 '{"pcr_bank":"sha256","pcr_ids":"7"}'
    ```
@@ -114,19 +116,22 @@ Setup:
    sudo update-initramfs -u
    ```
 
-- After success: `sudo clevis luks list -d /dev/<luks-partition>`
-- If you wait ~30–60 s it eventually decrypts itself → TPM released the key, Clevis unlocked
+- After success: `sudo clevis luks list -d /dev/<luks-partition>` will list `{1: ` with the details from the bind command above.
+- After reboot, the passphrase box will show upt, but if you wait ~30–60 seconds it eventually decrypts itself → TPM released the key, Clevis unlocked
   unattended; the passphrase prompt is cosmetic.
 - I'm working on instructions to have the fallback dropbear to remotely login and put in the passphrase.
 
 ### Step 2 — Add AMD ROCm apt repo (repo adds)
+Make a keyrings directory to store authentication keys for the repositories that we will download from.
 ```bash
 sudo mkdir --parents --mode=0755 /etc/apt/keyrings
 ```
+Get the key for AMD RocM packages.
 ```bash
 wget -qO - https://stable.repo.amd.com/rocm/gpg/packages.gpg | \
   gpg --dearmor | sudo tee /etc/apt/keyrings/amdrocm.gpg > /dev/null
 ```
+Add the repository to the ones `apt` looks for when you do `sudo apt update`
 ```bash
 sudo tee /etc/apt/sources.list.d/amdrocm-stable.sources << 'EOF'
 X-Repo-Id: amdrocm-stable
@@ -139,11 +144,13 @@ Signed-By: /etc/apt/keyrings/amdrocm.gpg
 Enabled: yes
 EOF
 ```
+Update the repositories. You should see the newly added amd.com/rocm/core repo in the list.
 ```bash
 sudo apt update
 ```
+Install the AMD packages.
 ```bash
-sudo apt install -y amdrocm-base amdrocm-amdsmi
+sudo apt install -y amdrocm-core-sdk amdrocm-amdsmi
 ```
 
 Add the user to the GPU groups (video + render) for AMD ROCm:
@@ -161,32 +168,37 @@ Docker official:
 ```bash
 sudo apt update
 ```
+Install some tools that we will use.
 ```bash
 sudo apt install -y ca-certificates curl gnupg util-linux-extra
 ```
+Get the authentication key for docker repo.
 ```bash
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 ```
 ```bash
 sudo chmod a+r /etc/apt/keyrings/docker.asc
 ```
+Add docker repo to the repositories.
 ```bash
 echo \
   "deb [arch=amd signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
   resolute stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
+Update
 ```bash
 sudo apt update
 ```
+Get docker tools.
 ```bash
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-Add the user to the docker group (then re-login):
+Add the user to the docker group so that you can use docker commands without sudo.
 ```bash
 sudo usermod -aG docker $USER
 ```
-Reload the docker group
+Reload the docker group or close the terminal and open a new one.
 ```bash
 newgrp docker
 ```
@@ -196,29 +208,35 @@ newgrp docker
 Do it the hard way so you can get tools to merge model download shards and quantize big model files:
 
 ```bash
-sudo apt install git amdrocm-core-sdk llama.cpp-tools libllama0 libggml0 libggml0-backend-vulkan \
+sudo apt install git llama.cpp-tools libllama0 libggml0 libggml0-backend-vulkan \
   cmake ccache build-essential libssl-dev ninja-build
 ```
 
-from home, or where ever you want llama.cpp directory (if not home, modify ~/llama.cpp references below accordingly)
+change directory to home.
 ```bash
 cd ~
+```
+Clone llama.cpp into ~/llama.cpp directory
+```bash
 git clone https://github.com/ggml-org/llama.cpp && cd ~/llama.cpp
 ```
-
-build llama.cpp. copy and paste all of this.
+Move into the llama.cpp directory
+```bash
+cd llama.cpp
+```
+build llama.cpp. copy and paste all of this section.
 ```bash
 HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
     cmake -S . -B build -DGGML_HIP=ON -DAMDGPU_TARGETS=gfx1151 -DCMAKE_BUILD_TYPE=Release
     
 cmake --build build --config Release -j"$(nproc)"
 ```
+Once it's done:
+   llama and llama-server tools → ~/llama.cpp/build/bin/llama
+   spilt/merge tool → ~/llama.cpp/build/bin/llama-gguf-split
+   build quantize tool → ~/llama.cpp/build/bin/llama-quantize
 
-llama and llama-server tools → ~/llama.cpp/build/bin/llama
-spilt/merge tool → ~/llama.cpp/build/bin/llama-gguf-split
-build quantize tool → ~/llama.cpp/build/bin/llama-quantize
-
-you need to add the tools to your path
+Add the llama.cpp tools to your path
 ```bash
 echo 'export PATH=~/llama.cpp/build/bin:$PATH' >> ~/.bashrc
 ```
@@ -229,9 +247,11 @@ source ~/.bashrc
 
 ### Step 5 — Hugging Face + download, merge + import to ollama to come — `llm-setup.md` §1.8
 
+Make the directory to store the models
 ```bash
 mkdir ~/models
 ```
+Install hugging face tools and python3 .venv environments
 ```bash
 sudo apt install python3-huggingface-hub python3.14-venv
 ```
@@ -240,22 +260,26 @@ next step is going to take a while. it builds the hf tool and then will download
 hf download Qwen/Qwen3.6-35B-A3B --local-dir ~/models/Qwen3.6-35B-A3B
 ```
 
-Merge sharded Huggingface download into single gguf file that can be hosted on llama.cpp
+Merge sharded Huggingface download into single gguf file that can be hosted on llama.cpp. This uses a different tool that was not made when we cmake built the llama.cpp tools above. It uses python3 .venv environments in the ~/llama.cpp directory.
 ```bash
 cd ~/llama.cpp
 ```
+Create the .venv python3 environment.
 ```bash
 python3 -m venv .venv
 ```
 
 once the above `python3 -m venv .venv` step creates the .venv project environment, `source .venv/bin/activate` gets you back into the .venv environment when you are in the ~/llama.cpp directory. only copy the commands below from after the `$`, they assume you are in the .venv environment denoted by the (.venv) in the command prompt.
 
+Download the python3 dependencies for the package.
 ```bash
 (.venv)$ pip install -r requirements.txt
 ```
+convert the shards into a .gguf file with full quantization.
 ```bash
 (.venv)$ python3 convert_hf_to_gguf.py ../models/Qwen3.6-35B-A3B --outfile ../models/Qwen3.6-35B-A3B/Qwen3.6-35B-A3B.gguf --outtype f16
 ```
+Close the python3 package environment.
 ```bash
 (.venv)$ deactivate
 ```
@@ -293,7 +317,7 @@ sudo apt install npm
 curl -fsSL https://pi.dev/install.sh | sh
 ```
 
-Don't start pi now when it asked you to at the end of installation. It added pi to the path in .bashrc, which we need to reload.
+Don't start pi now when it asks you to at the end of installation. It added pi to the path in .bashrc, which we need to reload.
 
 ```bash
 source ~/.bashrc
@@ -340,6 +364,8 @@ copy this (beow json) like normal (ctl + c). Then paste it into the nano termina
 ```
 
 do (ctl + o), press enter to save the file. then (ctl + x) to close nano.
+
+- there's a bug in llama.cpp right now that causes models end early on spaces. so we've added the "stop": ["gasdf"] until the bug is fixed. then we can remove it.
 
 Start pi
 ```bash
