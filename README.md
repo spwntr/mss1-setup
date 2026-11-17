@@ -385,18 +385,13 @@ in pi, login to llama.cpp
 /login llama.cpp
 ```
 
-follow directions to input llama router `http://localhost:9931`
-then leave api key blank (unless you've set one in llama.cpp)
-```pi
-/llama
-```
-move the arrow to Qwen3.6-35B-A3B, hit enter. It will say something in red about the key, don't worry about it.
+follow directions to input llama router `http://localhost:9931` then leave api key blank (unless you've set one in llama.cpp)
 
 ```pi
 /model
 ```
 
-select Qwen3.6-35-A3B, hit enter. Start asking it questions. It should be able to help troubleshoot from here.
+select Qwen3.6-35-A3B, hit enter. Start asking it questions. It should be able to help troubleshoot from here. If it is on the wrong path. `Esc` stops it. And you can start a new prompt. Otherwise, it will queue the prompts and wait for it to finish. [pi.dev](https://pi.dev) for documentation.
 
 To exit pi:
 ```pi
