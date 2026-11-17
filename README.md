@@ -63,11 +63,32 @@ chmod 600 ~/.ssh/id_ed25519 ~/.ssh/id_ed25519.pub
 
 
 ###Step 1 — Bind disk to TPM — `clevis` + `clevis-tpm2` so that it will automatically unencrypt the disk.
+Ubuntu 26.04 installer refuses hardware-backed (TPM) full-disk encryption (PCR_UNUSABLE error;
+Secure Boot policy PCR7 measurements, dbt not supported by secboot). With plain passphrase LUKS, the
+machine drops to early boot and waits for the passphrase at the console — a headless server hangs
+after every reboot / power cut.
 
-Install with normal LUKS, add TPM as an extra unlock method after install. These tools seal the
-key to the machine's current measurements rather than predicting future ones, so the dbt problem
-that blocked the installer doesn't apply. You get unattended boot, and your passphrase remains as
-a backup.
+Setup:
+1. **SSH**
+   ```bash
+   sudo apt install net-tools ssh cryptsetup lvm2 shim-signed
+   ```
+   ```bash
+   sudo systemctl enable ssh.service
+   ```
+   ```bash
+   sudo systemctl start ssh.service
+   ```
+   we can check that it is running. should be green dots with "active (running)"
+   ```bash
+   sudo systemctl status ssh.service
+   ```
+   do (ctl + c) to get back to the terminal prompt.
+   
+   Install with normal LUKS, add TPM as an extra unlock method after install. These tools seal the
+   key to the machine's current measurements rather than predicting future ones, so the dbt problem
+   that blocked the installer doesn't apply. You get unattended boot, and your passphrase remains as
+   a backup.
 
    Find the encrypted partition. Output is the <luks-partition> something like nvmexxxxxx. Replace the place holders in the following commands.
    ```bash
