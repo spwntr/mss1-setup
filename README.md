@@ -154,7 +154,7 @@ sudo apt install amdrocm-core-dev10.1-gfx1151 amd-debug-tools
 ```
 Add your user to the amd groups for render and video.
 ```bash
-sudo usermod -a -G render,video $LOGNAME
+sudo usermod -a -G render,video $USER
 
 ```
 
