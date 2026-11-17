@@ -356,7 +356,6 @@ copy this (beow json) like normal (ctl + c). Then paste it into the nano termina
           "id": "Qwen3.6-35B-A3B",
           "name": "Qwen3.6-35B-A3B",
           "reasoning": true,
-          "stop": ["gasdf"],
           "input": ["text"],
           "contextWindow": 262144,
           "maxTokens": 262144,
@@ -375,7 +374,6 @@ copy this (beow json) like normal (ctl + c). Then paste it into the nano termina
 
 do (ctl + o), press enter to save the file. then (ctl + x) to close nano.
 
-- there's a bug in llama.cpp right now that causes models end early on spaces. so we've added the "stop": ["gasdf"] until the bug is fixed. then we can remove it.
 
 Start pi
 ```bash
