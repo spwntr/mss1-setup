@@ -61,80 +61,13 @@ chmod 600 ~/.ssh/authorized_keys
 chmod 600 ~/.ssh/id_ed25519 ~/.ssh/id_ed25519.pub
 ```
 
-### ~~Step 1 — Encryption: dropbear + clevis~~
 
-**This section is presently not working. I misunderstood the instructions. I'm working on fixing it. Go to the next step.**
+###Step 1 — Bind disk to TPM — `clevis` + `clevis-tpm2` so that it will automatically unencrypt the disk.
 
-Ubuntu 26.04 installer refuses hardware-backed (TPM) full-disk encryption (PCR_UNUSABLE error;
-Secure Boot policy PCR7 measurements, dbt not supported by secboot). With plain passphrase LUKS, the
-machine drops to early boot and waits for the passphrase at the console — a headless server hangs
-after every reboot / power cut.
-
-Workarounds:
-1. **Remote unlock over SSH** — `dropbear-initramfs`.
-   Small SSH server that runs in initramfs before the disk is unlocked; after reboot you SSH in
-   from anywhere and type the passphrase. Simple and secure; person still has to unlock after each
-   reboot, just not physically.
-
-   ```bash
-   sudo apt install dropbear-initramfs net-tools ssh cryptsetup lvm2 shim-signed
-   ```
-   copy your public key to /etc/dropbear/initramfs/authorized_keys
-   ```bash
-   cat ~/.ssh/id_ed25519.pub
-   ```
-   select the output of the cat for your public key and copy it with right click on the mouse
-   ```bash
-   sudo nano /etc/dropbear/initramfs/authorized_keys
-   ```
-   this opens editor nano (which looks and acts weird). do (ctl + shift + v) to paste into the editor.
-   then do (ctl + o) and then enter to save the file. and (ctl + x) to quit and go back to terminal.
-   ```bash
-   sudo cat /etc/dropbear/initramfs/authorized_keys
-   ```
-   to make sure it now contains your public key. if no output, or it's wrong, cycle back up and delete it's contents and put the key there.
-   ```bash
-   sudo chmod 600 /etc/dropbear/initramfs/authorized_keys
-   ```
-   ```bash
-   sudo update-initramfs -u
-   ```
-   this updates the boot settings. next we start the ssh server to run so we can get to it.
-   ```bash
-   sudo systemctl enable ssh.service
-   ```
-   ```bash
-   sudo systemctl start ssh.service
-   ```
-   we can check that it is running. should be green dots with "active (running)"
-   ```bash
-   sudo systemctl status ssh.service
-   ```
-   do (ctl + c) to get back to the terminal prompt.
-
-   Reboot. Put in the passphrase, then sign in like normal.
-
-   After reboot find your IP address
-   ```bash
-   ifconfig | grep "inet 192"
-   ```
-   the output in the form "192.168.x.x" is your <host-ip> to replace that in the next line.
-
-   connect from a computer that you would use to login remotely and put in the disk encryption passphrase if the clevis in the next step doesn't work.
-   ```bash
-   ssh root@<host-ip>`
-   ```
-   ```bash
-   cryptroot-unlock
-   ```
-   to enter the disk
-   passphrase.
-
-3. **Bind disk to TPM yourself** — `clevis` + `clevis-tpm2`.
-   Install with normal LUKS, add TPM as an extra unlock method after install. These tools seal the
-   key to the machine's current measurements rather than predicting future ones, so the dbt problem
-   that blocked the installer doesn't apply. You get unattended boot, and your passphrase remains as
-   a backup.
+Install with normal LUKS, add TPM as an extra unlock method after install. These tools seal the
+key to the machine's current measurements rather than predicting future ones, so the dbt problem
+that blocked the installer doesn't apply. You get unattended boot, and your passphrase remains as
+a backup.
 
    Find the encrypted partition. Output is the <luks-partition> something like nvmexxxxxx. Replace the place holders in the following commands.
    ```bash
@@ -163,6 +96,7 @@ Workarounds:
 - After success: `sudo clevis luks list -d /dev/<luks-partition>`
 - If you wait ~30–60 s it eventually decrypts itself → TPM released the key, Clevis unlocked
   unattended; the passphrase prompt is cosmetic.
+- I'm working on instructions to have the fallback dropbear to remotely login and put in the passphrase.
 
 ### Step 2 — Add AMD ROCm apt repo (repo adds)
 ```bash
