@@ -160,15 +160,6 @@ Test the amd-smi output. It should have a big table output. If it can't find the
 ```bash
 amd-smi
 ```
-   If Amd tools aren't in path for some reason. Add them to path:
-   ```bash
-   echo 'export PATH=/opt/rocm/core-10.1/bin:$PATH' >> ~/.bashrc'
-   ```
-   Reload bashrc to use the new path.
-   ```bash
-   source ~/.bashrc
-   ```
-
 ### Step 3 — Install all the stuff with apt
 Docker official:
 ```bash
