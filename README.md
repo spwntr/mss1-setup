@@ -155,7 +155,7 @@ sudo apt install -y amdrocm-core-sdk amdrocm-amdsmi
 
 Add the user to the GPU groups (video + render) for AMD ROCm:
 ```bash
-sudo usermod -aG video, render $USER
+sudo usermod -aG video,render $USER
 ```
 
 Amd tools aren't in path for some reason. Add them to path:
