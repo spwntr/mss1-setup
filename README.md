@@ -152,6 +152,11 @@ Get the core-dev packages and debug tools for our APU gfx1151.
 ```bash
 sudo apt install amdrocm-core-dev10.1-gfx1151 amd-debug-tools
 ```
+Add your user to the amd groups for render and video.
+```bash
+sudo usermod -a -G render,video $LOGNAME
+
+```
 
 ### Step 3 — Install all the stuff with apt
 Docker official:
