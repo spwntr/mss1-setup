@@ -116,8 +116,11 @@ after every reboot / power cut.
    sudo update-initramfs -u
    ```
 
-- After success: `sudo clevis luks list -d /dev/<luks-partition>` will list `{1: ` with the details from the bind command above.
-- After reboot, the passphrase box will show upt, but if you wait ~30–60 seconds it eventually decrypts itself → TPM released the key, Clevis unlocked
+- After success: this should list `{1: ` with the details from the bind command above.
+  ```bash
+  sudo clevis luks list -d /dev/<luks-partition>
+  ```
+- After reboot, the passphrase box will show up, but if you wait ~30–60 seconds it eventually decrypts itself → TPM released the key, Clevis unlocked
   unattended; the passphrase prompt is cosmetic.
 - I'm working on instructions to have the fallback dropbear to remotely login and put in the passphrase.
 
@@ -159,9 +162,13 @@ sudo usermod -aG video,render $USER
 ```
 
 Amd tools aren't in path for some reason. Add them to path:
-`echo 'export PATH=/opt/rocm/core-10.1/bin:$PATH' >> ~/.bashrc`
+```bash
+echo 'export PATH=/opt/rocm/core-10.1/bin:$PATH' >> ~/.bashrc'
+```
 Reload bashrc to use the new path.
-`source ~/.bashrc`
+```bash
+source ~/.bashrc
+```
 
 ### Step 3 — Install all the stuff with apt
 Docker official:
