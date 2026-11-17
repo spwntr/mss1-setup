@@ -155,8 +155,19 @@ sudo apt install amdrocm-core-dev10.1-gfx1151 amd-debug-tools
 Add your user to the amd groups for render and video.
 ```bash
 sudo usermod -a -G render,video $USER
-
 ```
+Test the amd-smi output. It should have a big table output. If it can't find the command, the amd tools aren't in the path.
+```bash
+amd-smi
+```
+   If Amd tools aren't in path for some reason. Add them to path:
+   ```bash
+   echo 'export PATH=/opt/rocm/core-10.1/bin:$PATH' >> ~/.bashrc'
+   ```
+   Reload bashrc to use the new path.
+   ```bash
+   source ~/.bashrc
+   ```
 
 ### Step 3 — Install all the stuff with apt
 Docker official:
