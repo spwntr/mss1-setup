@@ -295,7 +295,9 @@ Close the python3 package environment.
 Once you have a model in ~/models directory you can and it should be reachable at `localhost:9931` from a browser
 
 
-Run llama.cpp as a model router that you can connect to as a chat bot or with an agent like pi.dev as below. Adding `--host 0.0.0.0` makes the router available from other computers on your local network if you open a browser and go to `http:<mss1-IP-address>:9931`.
+Run llama.cpp as a model router that you can connect to as a chat bot or with an agent like pi.dev as below. Adding `--host 0.0.0.0` makes the router available from other computers on your local network if you open a browser and go to 
+- `http:<mss1-IP-address>:9931` or `<host>:9931`
+> which is the name of the mss1 box from way at the top where we figured out `<username>@<host>`.
 ```bash
 llama-server --models-dir ~/models --host 0.0.0.0
 ```
