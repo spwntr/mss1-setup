@@ -292,26 +292,14 @@ Close the python3 package environment.
 
 ### Step 6 — Run the model with llama.cpp
 
-Once you have a model in ~/models directory you can:
+Once you have a model in ~/models directory you can and it should be reachable at `localhost:9931` from a browser
 
-1. run it as a chat bot in an open-webui interface with:
+
+Run llama.cpp as a model router that you can connect to as a chat bot or with an agent like pi.dev as below. Adding `--host 0.0.0.0` makes the router available from other computers on your local network if you open a browser and go to `http:<mss1-IP-address>:9931`.
 ```bash
-llama-server -m ~/models/<your_gguf_file>
+llama-server --models-dir ~/models --host 0.0.0.0
 ```
-
-or 
-
-```bash
-llama-server -m ~/models/<your_model_folder>/<your_gguf_file>
-```
-
-and it should be reachable at `localhost:9931` from a browser
-
-
-2. run llama.cpp as a model router that you can connect to an agent like pi.dev as below
-```bash
-llama-server --models-dir ~/models
-```
+You should be able to chat with Qwen3.6 now from `localhost:9931` on the mss1 box from a browser.
 
 ### Step 7 — Pi.dev. Get an agent.
 
