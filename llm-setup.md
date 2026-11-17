@@ -223,9 +223,9 @@ curl -d '{"model":"qwen3:0.6b","prompt":"Say hello","stream":false}' localhost:1
 - With plain passphrase LUKS, the machine drops to early boot and waits for the passphrase at the
   console — a headless server hangs after every reboot / power cut.
 
-## Workarounds
+## Workarounds 
 
-1. **Remote unlock over SSH** — `dropbear-initramfs`.
+1. I have not been able to get this to work. I originally set it up wrong. I'm working on trying to figure this out. **Remote unlock over SSH** — `dropbear-initramfs`.
    Small SSH server that runs in initramfs before the disk is unlocked; after reboot you SSH in
    from anywhere and type the passphrase. Simple and secure; person still has to unlock after each
    reboot, just not physically.
@@ -233,7 +233,6 @@ curl -d '{"model":"qwen3:0.6b","prompt":"Say hello","stream":false}' localhost:1
    ```bash
    sudo apt install dropbear-initramfs
    # add your public key to /etc/dropbear/initramfs/authorized_keys
-   cat ~/.ssh/id_ed25519.pub >> /etc/dropbear/initramfs/authorized_keys
    sudo chmod 600 /etc/dropbear/initramfs/authorized_keys
    sudo update-initramfs -u
    ```
