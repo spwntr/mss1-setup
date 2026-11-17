@@ -140,6 +140,10 @@ install the file that adds the amd rocm repositories.
 ```bash
 sudo apt install ./amdgpu-install_31.60.316000-1_all.deb
 ```
+Delete the deb file now that it's installed.
+```bash
+rm ./amdgpu-install_31.60.316000-1_all.deb
+```
 Update the repositories, which should now include amd.rocm sources.
 ```bash
 sudo apt update
