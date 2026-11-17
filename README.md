@@ -336,7 +336,7 @@ nano ~/.pi/agent/models.json
 
 this will open a nano editor in the terminal. Don't just press buttons here, it doesn't act normal.
 
-copy this (beow json) like normal (ctl + c). Then paste it into the nano terminal window with (ctl + shift + v)
+copy this (below json) like normal (ctl + c). Then paste it into the nano terminal window with (ctl + shift + v)
 
 ```bash
 {
