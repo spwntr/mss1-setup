@@ -225,7 +225,7 @@ cd ~
 ```
 Clone llama.cpp into ~/llama.cpp directory
 ```bash
-git clone https://github.com/ggml-org/llama.cpp && cd ~/llama.cpp
+git clone https://github.com/ggml-org/llama.cpp
 ```
 Move into the llama.cpp directory
 ```bash
