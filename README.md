@@ -33,7 +33,8 @@ Steps to get the box from Windows to Ubuntu:
 9. Open terminal, `sudo apt update` then `sudo apt upgrade`. Let that finish and reboot.
 10. Optional: make a free Ubuntu Pro account and bind your installation with the instructions online;
     redo update and upgrade, and reboot.
-11. Open Firmware Updater and update all of those with reboots. **DO NOT POWER OFF** while the
+11. Open Firmware Updater and update all of the listed items with green dots next to them and green
+    update buttons when you clock on them. They will require reboots **DO NOT POWER OFF** while the
     firmware updates are happening. They might take a while.
 
 ## Setup sequence (ordered starting with fresh Ubuntu 26.04 install)
@@ -51,11 +52,13 @@ Setup ssh keys
 ```bash
 mkdir -p ~/.ssh && chmod 700 ~/.ssh
 ```
-Use your username and the name of your computer as `<username>` and `<host>`. This information is in your terminal command line prompt `<username>@<host>:~$`
+Use your username and the name of your computer as `<username>` and `<host>`. 
+This information is in your terminal command line prompt `<username>@<host>:~$`
 ```bash
 ssh-keygen -t ed25519 -C "<username>@<host>" -f ~/.ssh/id_ed25519
 ```
-put in a passcode that you won't forget as the key. you can leave it blank, but you would have to remember you left it blank if you do.
+put in a passcode that you won't forget as the key. you can leave it blank, 
+but you would have to remember you left it blank if you do.
 ```bash
 cat ~/.ssh/id_ed25519.pub >> ~/.ssh/authorized_keys
 ```
