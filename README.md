@@ -189,7 +189,7 @@ sudo chmod a+r /etc/apt/keyrings/docker.asc
 Add docker repo to the repositories.
 ```bash
 echo \
-  "deb [arch=amd signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
   resolute stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
 Update
