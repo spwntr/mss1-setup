@@ -239,9 +239,9 @@ HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" \
 cmake --build build --config Release -j"$(nproc)"
 ```
 Once it's done:
-   llama and llama-server tools → ~/llama.cpp/build/bin/llama
-   spilt/merge tool → ~/llama.cpp/build/bin/llama-gguf-split
-   build quantize tool → ~/llama.cpp/build/bin/llama-quantize
+- llama and llama-server tools → ~/llama.cpp/build/bin/llama
+- spilt/merge tool → ~/llama.cpp/build/bin/llama-gguf-split
+- build quantize tool → ~/llama.cpp/build/bin/llama-quantize
 
 Add the llama.cpp tools to your path
 ```bash
@@ -275,8 +275,11 @@ Create the .venv python3 environment.
 ```bash
 python3 -m venv .venv
 ```
-
-once the above `python3 -m venv .venv` step creates the .venv project environment, `source .venv/bin/activate` gets you back into the .venv environment when you are in the ~/llama.cpp directory. only copy the commands below from after the `$`, they assume you are in the .venv environment denoted by the (.venv) in the command prompt.
+Open the .venv environment.
+```bash
+source .venv/bin/activate
+```
+Only copy the commands below from after the `$`, they assume you are in the .venv environment denoted by the (.venv) in the command prompt.
 
 Download the python3 dependencies for the package.
 ```bash
