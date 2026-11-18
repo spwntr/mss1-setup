@@ -109,23 +109,22 @@ after every reboot / power cut.
    sudo update-initramfs -u -k all
    ```
 
-   Caveat: a firmware or Secure Boot database update can change PCR7; the TPM unlock then fails and
-   falls back to asking for the passphrase. When that happens, unlock manually once using (1.) and re-bind.
+   > Caveat: a firmware or Secure Boot database update can change PCR7; the TPM unlock then fails and
+   > falls back to asking for the passphrase. When that happens, unlock manually once using (1.) and re-bind the the 2 commands above with the clevis bind and the update-initramfs.
    
-   ```bash
-   sudo clevis luks bind -d /dev/<luks-partition> tpm2 '{"pcr_bank":"sha256","pcr_ids":"7"}'
-   ```
-   ```bash
-   sudo update-initramfs -u
-   ```
-
 - After success: this should list `{1: ` with the details from the bind command above.
   ```bash
   sudo clevis luks list -d /dev/<luks-partition>
   ```
+  > if the clevis list shows 2 entries, you will need to unbind the second one
+  > ```bash
+  > sudo clevis luks unbind -d /dev/<luks-partition> -s 2
+  > ```
 - After reboot, the passphrase box will show up, but if you wait ~30–60 seconds it eventually decrypts itself → TPM released the key, Clevis unlocked
   unattended; the passphrase prompt is cosmetic.
 - I'm working on instructions to have the fallback dropbear to remotely login and put in the passphrase.
+
+Reboot and make sure it works.
 
 ### Step 2 — Add AMD ROCm apt repo (repo adds)
 Get dependencies
