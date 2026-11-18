@@ -106,7 +106,7 @@ after every reboot / power cut.
    sudo clevis luks bind -d /dev/<luks-partition> tpm2 '{"pcr_bank":"sha256","pcr_ids":"7"}'
    ```
    ```bash
-   sudo update-initramfs -u
+   sudo update-initramfs -u -k all
    ```
 
    Caveat: a firmware or Secure Boot database update can change PCR7; the TPM unlock then fails and
