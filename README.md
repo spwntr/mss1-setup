@@ -116,9 +116,12 @@ after every reboot / power cut.
   ```bash
   sudo clevis luks list -d /dev/<luks-partition>
   ```
-  > if the clevis list shows 2 entries, you will need to unbind the second one
+  > if the clevis list shows 2 entries, you will need to unbind the second one and update initramfs.
   > ```bash
   > sudo clevis luks unbind -d /dev/<luks-partition> -s 2
+  > ```
+  > ```bash
+  > sudo update-initramfs -u -k all
   > ```
 - After reboot, the passphrase box will show up, but if you wait ~30–60 seconds it eventually decrypts itself → TPM released the key, Clevis unlocked
   unattended; the passphrase prompt is cosmetic.
