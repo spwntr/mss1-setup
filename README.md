@@ -13,11 +13,11 @@ everything else you'd want setup. chat can help you do it, pi.dev can potentiall
 Note: it's a **fresh install of Windows that we will never use** — so no migration, just change a
 few settings and then wipe for the Ubuntu install.
 
-Steps to get the box from Windows to Ubuntu:
+Steps to get the box from Windows to Ubuntu. I highly recommend reading this [Ubuntu tutorial](https://ubuntu.com/desktop/docs/en/latest/how-to/). Pay special attention to (2) Turing off bit locker encryption coming from windows. And (6) Clearing TPM. It seems that doing these 2 things from Windows before wiping it are critical to being able to bind the TPM later with clevis.
 
 1. Fly through the Windows setup **without** connecting to wifi or plugging in ethernet.
 2. Go to Windows settings for disk encryption and turn **off** disk encryption. This may take a
-   while. Reboot.
+   while. Reboot. Go back and find TPM and clear that as well, which will require a reboot.
 3. Make an Ubuntu 26.04 bootable USB drive.
 4. While booting, when you see the **MINIS FORUM**, hit **DELETE** on your keyboard to enter BIOS.
    Choose boot from USB that you have put in with Ubuntu on it. Select Try/install.
